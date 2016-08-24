@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Token
 
 main :: IO ()
-main = someFunc
+main = putStrLn "Token!!"

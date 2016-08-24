@@ -1,10 +1,10 @@
 module SpecHelper
   ( module Test.Hspec
-  , module Lib
   , module Control.Exception
+  , module Token
   ) where
 
 import Test.Hspec
-import Lib
+import Token
 import Control.Exception (evaluate)
 
