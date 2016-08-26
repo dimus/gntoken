@@ -10,6 +10,7 @@ module Token
 
 import Data.Char
 
+type Offset = Int
 data Token = Token { verbatim :: String
                    , cleaned :: String
                    , start :: Int
@@ -18,16 +19,17 @@ data Token = Token { verbatim :: String
                    } deriving (Show, Eq)
 
 
-tokenize :: String -> Int -> [Token]
+tokenize :: String -> Offset -> [Token]
 tokenize s o =
   let
     tokens = preTokenize s o
   in
     removeDivs tokens
 
+
 slice :: String -> Token -> String
 slice s t =
-  take len. drop (start t) $ s
+  take len . drop (start t) $ s
   where
     len = (end t) - (start t)
 
@@ -52,7 +54,7 @@ detectDiv :: Token -> Token -> Bool
 detectDiv t1 t2
   | (length . verbatim $ t1) < 2 = False
   | not $ endOfLine  t1 t2 = False
-  | not . isLower . head .verbatim $ t2 = False
+  | not . isLower . head . verbatim $ t2 = False
   | z /= '-' = False
   | not . isLower $ y = False
   | otherwise = True
