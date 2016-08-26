@@ -9,5 +9,5 @@ main :: IO ()
 main = do
   (file_path:_) <- getArgs
   text <- readFile file_path
-  let tokens = T.tokenize text 0
-  putStrLn . show . length $ tokens
+  let tokens = T.tokenize T.zeroToken text
+  putStrLn ((unwords . map (T.verbatim)) $ tokens)

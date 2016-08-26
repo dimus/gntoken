@@ -4,6 +4,7 @@ module Token
     , cleaned
     , start
     , end
+    , zeroToken
     , tokenize
     , slice
     ) where
@@ -18,14 +19,24 @@ data Token = Token { verbatim :: String
                    , nextSpace :: Maybe Char
                    } deriving (Show, Eq)
 
-
-tokenize :: String -> Offset -> [Token]
-tokenize s o =
-  let
-    tokens = preTokenize s o
+tokenize :: Token -> String -> [Token]
+tokenize t [] = t : []
+tokenize t1 s =
+  let (w, rest) = break (`elem` " \n\r") s
+      start = 1 + end t1
+      t2 = tokenInit w start rest
   in
-    removeDivs tokens
+    if mergeable t1 t2
+      then tokenize (merge t1 t2) (stripSpace rest)
+      else t1 : tokenize t2 (stripSpace rest)
 
+
+zeroToken = tokenInit [] (-1) []
+
+
+tokenInit :: String -> Offset -> String -> Token
+tokenInit w o rest =
+  Token w (flipStrip w) o (o + length w) (spaceChar rest)
 
 slice :: String -> Token -> String
 slice s t =
@@ -35,19 +46,18 @@ slice s t =
 
 --private
 
-removeDivs :: [Token] -> [Token]
-removeDivs [] = []
-removeDivs (x:[]) = x:[]
-removeDivs (x:y:xs) =
-  if detectDiv x y
-    then (mergeDiv x y) : removeDivs xs
-    else x : removeDivs (y:xs)
+merge :: Token -> Token -> Token
+merge t1 t2 =
+  if (null . verbatim $ t1) then t2
+  else Token ((verbatim t1) ++ (verbatim t2)) ((cleaned t1) ++
+             (cleaned t2)) (start t1) (end t2) (nextSpace t2)
 
 
-mergeDiv :: Token -> Token -> Token
-mergeDiv t1 t2 =
-  Token ((verbatim t1) ++ (verbatim t2)) ((cleaned t1) ++
-        (cleaned t2)) (start t1) (end t2) (nextSpace t2)
+mergeable :: Token -> Token -> Bool
+mergeable t1 t2
+  | null . verbatim $ t1 = True
+  | null . verbatim $ t2 = True
+  | otherwise = detectDiv t1 t2
 
 
 detectDiv :: Token -> Token -> Bool
@@ -69,27 +79,14 @@ endOfLine t1 t2
   | otherwise = False
 
 
-preTokenize :: String -> Int -> [Token]
-preTokenize [] _ = []
-preTokenize s o =
-  let (t, ts) = break (`elem` " \n\r") s
-      end = o + (length t)
-      token = Token t (flipStrip t) o end (spaceChar ts)
-      tokens = tokenize (restOf ts) (end + 1)
-  in
-    if null t
-      then tokens
-      else token : tokens
-
-
 spaceChar :: [Char] -> Maybe Char
 spaceChar []    = Nothing
 spaceChar (x:_) = Just x
 
 
-restOf :: [Char] -> [Char]
-restOf [] = []
-restOf (_:xs) = xs
+stripSpace :: [Char] -> [Char]
+stripSpace [] = []
+stripSpace (_:xs) = xs
 
 
 flipStrip :: String -> String

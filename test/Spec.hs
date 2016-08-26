@@ -6,7 +6,7 @@ main = hspec $ do
                       "strangely a semi-reasonable Polar-",
                       "Bear is a specia-",
                       "lity of mine!"]
-      ts = tokenize text 0
+      ts = tokenize zeroToken text
       hey = head ts
       there = ts !! 1
       is = ts !! 3
