@@ -1,0 +1,20 @@
+import SpecHelper
+
+main :: IO ()
+main = hspec $ do
+  describe "slice" $ do
+    let text = unlines ["\"Hey,    there it is--",
+                       "strangely a semi-reasonable Polar-",
+                       "Bear is a specia-",
+                       "lity of mine!"]
+    let ts = tokenize text 0
+    let hey = head ts
+    let there = ts !! 1
+    let strangely = 4
+    let semi = ts !! 6
+    let polar = ts !! 7
+    let speciality = 11
+
+    it "gets token's substring from a string" $ do
+      slice text polar `shouldBe` "Polar-"
+

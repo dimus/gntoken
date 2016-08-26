@@ -5,6 +5,7 @@ module Token
     , start
     , end
     , tokenize
+    , slice
     ) where
 
 import Data.Char
@@ -24,6 +25,11 @@ tokenize s o =
   in
     removeDivs tokens
 
+slice :: String -> Token -> String
+slice s t =
+  take len. drop (start t) $ s
+  where
+    len = (end t) - (start t)
 
 --private
 
@@ -38,7 +44,8 @@ removeDivs (x:y:xs) =
 
 mergeDiv :: Token -> Token -> Token
 mergeDiv t1 t2 =
-  Token ((verbatim t1) ++ (verbatim t2)) ((cleaned t1) ++ (cleaned t2)) (start t1) (end t2) (nextSpace t2)
+  Token ((verbatim t1) ++ (verbatim t2)) ((cleaned t1) ++
+        (cleaned t2)) (start t1) (end t2) (nextSpace t2)
 
 
 detectDiv :: Token -> Token -> Bool
